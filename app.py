@@ -1,51 +1,48 @@
 from flask import Flask, render_template, request, redirect, url_for
-from flaskext.mysql import MySQL
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
 
 
-mysql = MySQL()
-# MySQL configurations
-app.config['MYSQL_DATABASE_USER'] = 'root'
-app.config['MYSQL_DATABASE_PASSWORD'] = 'c0deandw33d'
-app.config['MYSQL_DATABASE_DB'] = 'WishList'
-app.config['MYSQL_DATABASE_HOST'] = 'localhost'
-mysql.init_app(app)
+class Wish(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    text = db.Column(db.String(120))
+    granted = db.Column(db.Boolean)
 
 
-wish_list = []
+@app.route('/delete/<int:wish_id>')
+def delete(wish_id):
+    wish = Wish.query.filter_by(id=wish_id)[0]
+    db.session.delete(wish)
+    db.session.commit()
+    return redirect(url_for('index'))
 
 
-def list_append(item):
-    global wish_list
-    wish_list.append(item)
-
-
-def list_delete(item):
-    global wish_list
-    wish_list.remove(item)
-
-
-def list_edit(item):
-    global wish_list
-    wish_list.remove(item)
+@app.route('/update/<int:wish_id>')
+def edit(wish_id):
+    wish = Wish.query.filter_by(id=wish_id)[0]
+    wish.granted = not wish.granted
+    db.session.commit()
+    return redirect(url_for('index'))
 
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    global wish_list
-    if request.method == 'POST':
-        item_added = request.form['item']
-        if item_added != '':
-            list_append(item_added)
+    wish_list = Wish.query.all()
     return render_template('index.html', wish_list=wish_list)
 
 
-@app.route('/delete/<item>')
-def delete(item):
-    list_delete(item)
+@app.route('/make', methods=['POST'])
+def make():
+    text = request.form.get('item')
+    wish = Wish(text=text, granted=False)
+    db.session.add(wish)
+    db.session.commit()
     return redirect(url_for('index'))
 
 
 if __name__ == '__main__':
-    app.run(debug = True)
+    app.run(debug=True)

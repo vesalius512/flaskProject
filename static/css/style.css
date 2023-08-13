@@ -26,7 +26,7 @@ margin-right:50%;
 
 }
 
-.btn{/*button class for making buttons change any of these settings as needed*/
+.btn{
     display: inline-block;
     padding: .375rem 1rem;
     font-size: 1rem;
@@ -40,7 +40,12 @@ margin-right:50%;
     background-color:#24a0ed;
     color:white;
     text-decoration: none;
-/*most of this is excess, really the main things you probably want are background color, border radius, cursor, text center, and to set the font size.*/
+}
+
+.btn:hover{
+    background-color: aliceblue;
+    color: black;
+    transition-duration: 0.6s;
 }
 
 #top-div
@@ -51,7 +56,7 @@ margin:auto;
 padding: 10px;
 }
 #empty_id{
-color: #ff69b4;
+color: black;
 margin: auto;
 width: 50%;
 text-align:center;

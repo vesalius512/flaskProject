@@ -11,7 +11,7 @@
     <h1>Wish List</h1>
 
     <div id = "top-div">
-    <form action="/" method = "POST">
+    <form action="/make" method = "POST">
         <input type = "text" id="item" name='item'>
         <input type="submit" value ='Add' class="btn" name='add_Button' >
     </form>
@@ -25,12 +25,23 @@
             <th>Item</th>
             <th>Action</th>
     </tr>
-    {% for item in wish_list %}
+    {% for wish in wish_list %}
     <tr>
-        <td>{{item}}</td>
         <td>
-            <a href="{{url_for ('delete',item=item) }}" class="btn" value="{{item}}">Delete</a>
-            <a href="" class="btn">Edit</a>
+            {{ wish.id }} | {{ wish.text }}
+            {% if wish.granted == False %}
+                <input type="checkbox" disabled>
+            {% else %}
+                <input type="checkbox" checked>
+            {% endif %}
+        </td>
+        <td>
+            <a href="/delete/{{ wish.id }}" class="btn" name="delete">Delete</a>
+                {% if wish.granted == False %}
+                    <a href="/update/{{ wish.id }}" class="btn" name="update">Grant</a>
+                {% else %}
+                    <a href="/update/{{ wish.id }}" class="btn" name="update">Disgrant</a>
+                {% endif %}
         </td>
     </tr>
     {% endfor %}
