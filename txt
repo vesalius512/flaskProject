@@ -1,0 +1,34 @@
+CREATE TABLE `users` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `username` VARCHAR(45) NULL,
+  `password` VARCHAR(45) NULL,
+  PRIMARY KEY (`id`));
+
+
+
+DELIMITER //
+CREATE PROCEDURE `create_user`(
+    IN c_username VARCHAR(20),
+    IN c_password VARCHAR(20)
+)
+BEGIN
+    if ( select exists (select 1 from users where username = c_username) ) THEN
+
+        select 'username exists';
+
+    ELSE
+
+        insert into users
+        (
+            username,
+            password
+        )
+        values
+        (
+            c_username,
+            c_password
+        );
+
+    END IF;
+END//
+DELIMITER ;

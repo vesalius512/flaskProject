@@ -1,28 +1,14 @@
-import werkzeug
 from flask import Flask, render_template, json, request, redirect, session
-from flaskext.mysql import MySQL
-from werkzeug.security import generate_password_hash, check_password_hash
 
-
-mysql = MySQL()
 app = Flask(__name__)
-app.secret_key = 'why would I tell you my secret key?'
-
-# MySQL configurations
-app.config['MYSQL_DATABASE_USER'] = 'jay'
-app.config['MYSQL_DATABASE_PASSWORD'] = 'jay'
-app.config['MYSQL_DATABASE_DB'] = 'BucketList'
-app.config['MYSQL_DATABASE_HOST'] = 'localhost'
-mysql.init_app(app)
-
 
 @app.route('/')
 def main():
     return render_template('index.html')
 
 
-@app.route('/showSignUp')
-def showSignUp():
+@app.route('/signup')
+def signup():
     return render_template('signup.html')
 
 
@@ -37,7 +23,7 @@ def showSignin():
 @app.route('/userHome')
 def userHome():
     if session.get('user'):
-        return render_template('userHome.html')
+        return render_template('homepage.html')
     else:
         return render_template('error.html', error='Unauthorized Access')
 
