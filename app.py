@@ -1,101 +1,51 @@
-from flask import Flask, render_template, json, request, redirect, session
+from flask import Flask, render_template, request, redirect, url_for
+from flaskext.mysql import MySQL
 
 app = Flask(__name__)
 
-@app.route('/')
-def main():
-    return render_template('index.html')
+
+mysql = MySQL()
+# MySQL configurations
+app.config['MYSQL_DATABASE_USER'] = 'root'
+app.config['MYSQL_DATABASE_PASSWORD'] = 'c0deandw33d'
+app.config['MYSQL_DATABASE_DB'] = 'WishList'
+app.config['MYSQL_DATABASE_HOST'] = 'localhost'
+mysql.init_app(app)
 
 
-@app.route('/signup')
-def signup():
-    return render_template('signup.html')
+wish_list = []
 
 
-@app.route('/showSignin')
-def showSignin():
-    if session.get('user'):
-        return render_template('userHome.html')
-    else:
-        return render_template('signin.html')
+def list_append(item):
+    global wish_list
+    wish_list.append(item)
 
 
-@app.route('/userHome')
-def userHome():
-    if session.get('user'):
-        return render_template('homepage.html')
-    else:
-        return render_template('error.html', error='Unauthorized Access')
+def list_delete(item):
+    global wish_list
+    wish_list.remove(item)
 
 
-@app.route('/logout')
-def logout():
-    session.pop('user', None)
-    return redirect('/')
+def list_edit(item):
+    global wish_list
+    wish_list.remove(item)
 
 
-@app.route('/validateLogin', methods=['POST'])
-def validateLogin():
-    try:
-        _username = request.form['inputEmail']
-        _password = request.form['inputPassword']
-
-        # connect to mysql
-
-        con = mysql.connect()
-        cursor = con.cursor()
-        cursor.callproc('sp_validateLogin', (_username,))
-        data = cursor.fetchall()
-
-        if len(data) > 0:
-            if check_password_hash(str(data[0][3]), _password):
-                session['user'] = data[0][0]
-                return redirect('/userHome')
-            else:
-                return render_template('error.html', error='Wrong Email address or Password.')
-        else:
-            return render_template('error.html', error='Wrong Email address or Password.')
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    global wish_list
+    if request.method == 'POST':
+        item_added = request.form['item']
+        if item_added != '':
+            list_append(item_added)
+    return render_template('index.html', wish_list=wish_list)
 
 
-    except Exception as e:
-        return render_template('error.html', error=str(e))
-    finally:
-        cursor.close()
-        con.close()
+@app.route('/delete/<item>')
+def delete(item):
+    list_delete(item)
+    return redirect(url_for('index'))
 
 
-@app.route('/signUp', methods=['POST', 'GET'])
-def signUp():
-    try:
-        _name = request.form['inputName']
-        _email = request.form['inputEmail']
-        _password = request.form['inputPassword']
-
-        # validate the received values
-        if _name and _email and _password:
-
-            # All Good, let's call MySQL
-
-            conn = mysql.connect()
-            cursor = conn.cursor()
-            _hashed_password = generate_password_hash(_password)
-            cursor.callproc('sp_createUser', (_name, _email, _hashed_password))
-            data = cursor.fetchall()
-
-            if len(data) is 0:
-                conn.commit()
-                return json.dumps({'message': 'User created successfully !'})
-            else:
-                return json.dumps({'error': str(data[0])})
-        else:
-            return json.dumps({'html': '<span>Enter the required fields</span>'})
-
-    except Exception as e:
-        return json.dumps({'error': str(e)})
-    finally:
-        cursor.close()
-        conn.close()
-
-
-if __name__ == "__main__":
-    app.run(port=5000)
+if __name__ == '__main__':
+    app.run(debug = True)

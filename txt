@@ -9,6 +9,7 @@ CREATE TABLE `users` (
 DELIMITER //
 CREATE PROCEDURE `create_user`(
     IN c_username VARCHAR(20),
+    IN c_email VARCHAR(20),
     IN c_password VARCHAR(20)
 )
 BEGIN
@@ -21,11 +22,13 @@ BEGIN
         insert into users
         (
             username,
+            email,
             password
         )
         values
         (
             c_username,
+            c_email,
             c_password
         );
 
